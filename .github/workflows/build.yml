@@ -2,7 +2,7 @@ name: Build Firmware and Create Artifact
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
