@@ -1,0 +1,74 @@
+name: Build Firmware and Create Artifact
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3.5 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget libncurses5:i386 libelf1:i386 lib32z1 lib32stdc++6 gtk-doc-tools intltool binutils-dev cmake lzma liblzma-dev lzma-dev uuid-dev liblzo2-dev xsltproc dos2unix libstdc++5 docbook-xsl-* sharutils autogen shtool gengetopt libltdl-dev libtool-bin
+
+    - name: Clone Source Code
+      run: |
+        git clone https://github.com/SWRT-dev/asuswrt-bcm
+
+    - name: Clone Toolchains and Set Up Build Environment
+      run: |
+        git clone https://github.com/SWRT-dev/bcmhnd-toolchains
+
+        cd bcmhnd-toolchains
+
+        sudo mkdir -p /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.24-binutils-2.25 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1 /opt/toolchains. 
+
+        sudo ln -sf $(pwd)/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.24-binutils-2.25 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-gcc-5.3-linux-4.1-uclibc-1.0.12-glibc-2.24-binutils-2.25 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 /opt/toolchains/
+
+        sudo ln -sf $(pwd)/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 /opt/toolchains/
+
+        sudo mkdir -p /projects/
+
+        sudo mkdir -p /projects/bca/
+
+        sudo mkdir -p /projects/bca/tools/
+
+        sudo mkdir -p /projects/bca/tools/linux/
+
+        sudo mkdir -p /projects/bca/tools/linux/bin/
+
+        sudo ln -sf $(pwd)/hndtools-armeabi-2013.11 /projects/bca/tools/linux/
+
+    - name: Build Firmware
+      run: |
+        cd asuswrt-bcm/release/src-rt-5.04axhnd.675x
+
+        make rt-ac88u
+
+    - name: Create Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: firmware-image
+        path: asuswrt-bcm/release/src-rt-5.04axhnd.675x/image
+
+    - name: Notify on Success
+      if: success()
+      run: |
+        echo "Firmware image successfully built and artifact created."
