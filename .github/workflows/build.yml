@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: docker://paldier/swrt-docker:latest
+      options: --user root
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
@@ -68,7 +69,7 @@ jobs:
         make tuf-ax3000_v2
 
     - name: Create Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: firmware-image
         path: asuswrt-bcm/release/src-rt-5.04axhnd.675x/image
